@@ -1,0 +1,72 @@
+1. 
+DELIMITER //
+
+CREATE FUNCTION sold_product(id_barang INT)
+RETURNS INT
+BEGIN
+  DECLARE total_penjualan INT;
+
+  SELECT SUM(jumlah) INTO total_penjualan
+  FROM detailnota
+  INNER JOIN hardware ON detailnota.idHardware = hardware.idHardware
+  WHERE hardware.idHardware = id_barang;
+
+  RETURN total_penjualan;
+END //
+
+DELIMITER ;
+
+SELECT hardware.idHardware,
+  hardware.namaHardware,
+  sold_product(hardware.idHardware) AS total_penjualan
+FROM hardware
+ORDER BY hardware.idHardware;
+
+2. 
+DELIMITER //
+
+CREATE FUNCTION check_hardware_availability(id_barang INT, jumlah_beli INT)
+RETURNS VARCHAR(255)
+BEGIN
+  DECLARE stok_tersedia INT;
+
+  SELECT stok INTO stok_tersedia
+  FROM hardware
+  WHERE idHardware = id_barang;
+
+  IF stok_tersedia >= jumlah_beli THEN
+    RETURN 'Ada';
+  ELSE
+    RETURN 'Tidak ada';
+  END IF;
+END //
+
+DELIMITER ;
+
+SET @id = 1;
+SET @jumlah = 100;
+
+SELECT `check_hardware_availability`(@id, @jumlah) AS `check_hardware_availability`;
+
+
+3.
+DELIMITER //
+
+CREATE FUNCTION hitung_item_nota(id_nota INT)
+RETURNS INT
+BEGIN
+  DECLARE total_pembelian INT;
+
+  SELECT SUM(jumlah) INTO total_pembelian
+  FROM detailnota
+  WHERE idNota = id_nota;
+
+  RETURN total_pembelian;
+END //
+
+DELIMITER ;
+
+SELECT nota.idNota AS 'ID Nota',
+  hitung_item_nota(nota.idNota) AS 'Total Pembelian'
+FROM nota
+ORDER BY nota.idNota;
